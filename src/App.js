@@ -1,23 +1,24 @@
-import logo from './logo.svg';
+import React from 'react'
 import './App.css';
 
-function App() {
+const gridLength = 10
+
+const board = Array(gridLength).fill(0).map(() => new Array(gridLength).fill(1))
+
+const App = () => {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <table>
+        {board.map((items, index) => {
+          return (
+            <tr key={index}>
+              {items.map((subItems, subIndex) => {
+                return <td key={subIndex}><div className="cell" /></td>
+              })}
+            </tr>
+          )
+        })}
+      </table>
     </div>
   );
 }
