@@ -1,0 +1,23 @@
+.cell {
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-width: 2px;
+  border-style: solid;
+  border-left-color: white;
+  border-top-color: white;
+  border-bottom-color: grey;
+  border-right-color: grey;
+}
+
+.cell0 {
+  background-color: #ddd;
+}
+
+.cell1 {
+  background-color: red;
+}
+
+.cell:hover {
+  background-color: #fff;
+}
