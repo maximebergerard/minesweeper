@@ -10,14 +10,18 @@
   border-right-color: grey;
 }
 
-.cell0 {
+.cell {
   background-color: #ddd;
 }
 
-.cell1 {
+.bomb {
   background-color: red;
 }
 
 .cell:hover {
-  background-color: #fff;
+  opacity: 0.5;
 }
+
+.flagged {
+  background-color: blue;
+} 
