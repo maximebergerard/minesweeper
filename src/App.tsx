@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react"
+import React, { useEffect, useReducer, useState } from "react"
 import Cell from "./components/Cell/Cell"
 import "./App.css"
 
@@ -38,24 +38,14 @@ function listToMatrix(list: CellDetails[], elementsPerSubArray: number) {
   return matrix
 }
 
-// const arr = [
-//   ...Array(gridWidth * gridHeight)
-//     .fill(0)
-//     .map(() => {
-//       return {
-//         type: CellType.Cell,
-//         flag: false,
-//         clicked: false,
-//       }
-//     }),
-// ]
-
 function generateBombs(
   arr: CellDetails[],
   arrRemover: number[],
   bombsCount: number,
 ): CellDetails[][] {
-  const randomA = getRandomArbitrary(0, gridWidth * gridHeight - 1)
+  const randomA = getRandomArbitrary(0, gridWidth * gridHeight - bombsCount) // ptn là c cassé
+  console.log(randomA, "randomA")
+  console.log(arrRemover, "arrRemover")
 
   if (bombsCount === 0) {
     const arrWithBombs = arr.map((item, index) => {
@@ -76,8 +66,6 @@ function generateBombs(
   }
 }
 
-// console.log(generateBombs(2))
-
 interface IState {
   arr: CellDetails[]
   grid: CellDetails[][]
@@ -85,17 +73,9 @@ interface IState {
   firstClick: boolean
 }
 
-// interface IAction {
-//   type: IState,
-//   value?: any,
-// }
-
 type Action =
   | { type: "reset" }
-  //  | { type: 'arr', arr: CellDetails[] }
-  | { type: "grid"; grid: CellDetails[][]; firstClick: boolean }
-  //  | { type: 'arrRemover', arrRemover: number[] }
-  | { type: "firstClick"; firstClick: boolean }
+  | { type: "setGrid"; grid: CellDetails[][]; firstClick: boolean }
 
 const initialState: IState = {
   arr: [
@@ -118,32 +98,26 @@ const initialState: IState = {
       }
     }),
   ),
-  arrRemover: [...Array(gridWidth * gridHeight).keys()],
+  arrRemover: Array.from(Array(gridWidth * gridHeight).keys()),
   firstClick: false,
 }
+
+console.log(initialState)
 
 const reducer = (state: IState, action: Action): IState => {
   switch (action.type) {
     case "reset":
-      return initialState
-    case "grid":
+      console.log(initialState, "initialState")
+
+      return { ...initialState }
+    case "setGrid":
+      console.log("case grid")
       return {
         ...state,
-        grid: generateBombs(state.arr, state.arrRemover, 3),
-        firstClick: true,
+        grid: action.grid,
+        firstClick: action.firstClick,
       }
-    case "firstClick":
-      return { ...state, firstClick: true }
-    // case "arr":
-    // case "arrRemover":
   }
-  // if (action.type === "reset") {
-  //     return initialState;
-  // }
-
-  // const result: IState = { ...state };
-  // result[action.type] = action.value;
-  // return result;
 }
 
 const App = () => {
@@ -151,6 +125,11 @@ const App = () => {
   const { grid, firstClick, arr, arrRemover } = state
 
   // const [firstClick, setFirstClick] = useState(false)
+
+  // useEffect(() => {
+  //   console.log(arrRemover, "arrRemover")
+  //   console.log(grid, "grid")
+  // }, [arrRemover, grid])
 
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -167,17 +146,12 @@ const App = () => {
     // handle firstCLick
     if (event.type === "click") {
       if (!firstClick) {
-        // dispatch({type: grid, generateBombs(arr, arrRemover, 3)})
-        dispatch({ type: "grid", grid, firstClick })
-        // setGrid(generateBombs(arr, arrRemover, 3))
-        // setFirstClick(true)
+        dispatch({
+          type: "setGrid",
+          grid: generateBombs(arr, arrRemover, 3),
+          firstClick: true,
+        })
       }
-      // setFirstClick((current) => {
-      //   if (current === false) {
-      //     // setGrid(generateBombs(arr, arrRemover, 3))
-      //   }
-      //   return true
-      // })
     }
 
     // synthetic event
@@ -207,32 +181,9 @@ const App = () => {
   }
 
   const handleReset = () => {
+    console.log(grid, "grid")
     dispatch({ type: "reset" })
-
-    // setFirstClick(false)
-    // setGrid(
-    //   new Array(gridHeight).fill(0).map(() =>
-    //     new Array(gridWidth).fill(0).map(() => {
-    //       return {
-    //         type: CellType.Cell,
-    //         flag: false,
-    //         clicked: false,
-    //       }
-    //     }),
-    //   ),
-    // )
-    // setArrRemover([...Array(gridWidth * gridHeight).keys()])
-    // setArr([
-    //   ...Array(gridWidth * gridHeight)
-    //     .fill(0)
-    //     .map(() => {
-    //       return {
-    //         type: CellType.Cell,
-    //         flag: false,
-    //         clicked: false,
-    //       }
-    //     }),
-    // ])
+    console.log(grid, "grid")
   }
 
   return (
