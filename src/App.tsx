@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useReducer, useState } from "react"
 import Cell from "./components/Cell/Cell"
 import "./App.css"
 
@@ -22,8 +22,8 @@ export function getRandomArbitrary(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
-function listToMatrix(list: number[], elementsPerSubArray: number) {
-  const matrix: number[][] = []
+function listToMatrix(list: CellDetails[], elementsPerSubArray: number) {
+  const matrix: CellDetails[][] = []
 
   for (let i = 0, k = -1; i < list.length; i++) {
     if (i % elementsPerSubArray === 0) {
@@ -31,80 +31,126 @@ function listToMatrix(list: number[], elementsPerSubArray: number) {
       matrix[k] = []
     }
 
+    console.log(list[i])
     matrix[k].push(list[i])
   }
 
   return matrix
 }
 
-// function generateBombs(
-//   bombsCount: number,
-//   grid: CellDetails[][],
-// ): CellDetails[][] {
-//   // picking a random cell on the grid
-//   const randomA = getRandomArbitrary(0, gridWidth)
-//   const randomB = getRandomArbitrary(0, gridHeight)
-//   console.log("generateBombs")
+// const arr = [
+//   ...Array(gridWidth * gridHeight)
+//     .fill(0)
+//     .map(() => {
+//       return {
+//         type: CellType.Cell,
+//         flag: false,
+//         clicked: false,
+//       }
+//     }),
+// ]
 
-//   if (bombsCount === 0) {
-//     return grid
-//   } else if (grid[randomB][randomA].type === CellType.Cell) {
-//     grid[randomB][randomA].type = CellType.Bomb
-//     generateBombs(bombsCount - 1, grid)
-//   } else {
-//     generateBombs(bombsCount, grid)
-//   }
-
-//   return grid
-// }
-
-const arr = [...Array(gridWidth * gridHeight).fill(0)]
-const arrRemover = [...Array(gridWidth * gridHeight).keys()]
-
-function generateBombs(bombsCount: number): CellDetails[][] {
-  const randomA = getRandomArbitrary(0, gridWidth * gridHeight)
+function generateBombs(
+  arr: CellDetails[],
+  arrRemover: number[],
+  bombsCount: number,
+): CellDetails[][] {
+  const randomA = getRandomArbitrary(0, gridWidth * gridHeight - 1)
 
   if (bombsCount === 0) {
-    console.log(arrRemover, "arrRemover")
-    console.log(arr, "arr")
-
     const arrWithBombs = arr.map((item, index) => {
       if (!arrRemover.includes(index)) {
         console.log(index, "index")
-        return 1
+        return {
+          type: CellType.Bomb,
+          flag: false,
+          clicked: false,
+        }
       } else return item
     })
 
-    console.log(arrWithBombs, "arrWithBombs")
-
-    console.log(listToMatrix(arrWithBombs, gridWidth), "matrixwithBombs")
     return listToMatrix(arrWithBombs, gridWidth)
   } else {
     arrRemover.splice(randomA, 1)
-    generateBombs(bombsCount - 1)
+    return generateBombs(arr, arrRemover, bombsCount - 1)
   }
 }
 
-generateBombs(2)
+// console.log(generateBombs(2))
 
-// de 1 à 35 et pick un nombre sur cette range
+interface IState {
+  arr: CellDetails[]
+  grid: CellDetails[][]
+  arrRemover: number[]
+  firstClick: boolean
+}
 
-const App = () => {
-  const [grid, setGrid] = useState(
-    new Array(gridHeight).fill(0).map(() =>
-      new Array(gridWidth).fill(0).map(() => {
+// interface IAction {
+//   type: IState,
+//   value?: any,
+// }
+
+type Action =
+  | { type: "reset" }
+  //  | { type: 'arr', arr: CellDetails[] }
+  | { type: "grid"; grid: CellDetails[][]; firstClick: boolean }
+  //  | { type: 'arrRemover', arrRemover: number[] }
+  | { type: "firstClick"; firstClick: boolean }
+
+const initialState: IState = {
+  arr: [
+    ...Array(gridWidth * gridHeight)
+      .fill(0)
+      .map(() => {
         return {
           type: CellType.Cell,
           flag: false,
           clicked: false,
         }
       }),
-    ),
-  )
+  ],
+  grid: new Array(gridHeight).fill(0).map(() =>
+    new Array(gridWidth).fill(0).map(() => {
+      return {
+        type: CellType.Cell,
+        flag: false,
+        clicked: false,
+      }
+    }),
+  ),
+  arrRemover: [...Array(gridWidth * gridHeight).keys()],
+  firstClick: false,
+}
 
-  console.log(grid)
+const reducer = (state: IState, action: Action): IState => {
+  switch (action.type) {
+    case "reset":
+      return initialState
+    case "grid":
+      return {
+        ...state,
+        grid: generateBombs(state.arr, state.arrRemover, 3),
+        firstClick: true,
+      }
+    case "firstClick":
+      return { ...state, firstClick: true }
+    // case "arr":
+    // case "arrRemover":
+  }
+  // if (action.type === "reset") {
+  //     return initialState;
+  // }
 
-  const [firstClick, setFirstClick] = useState(false)
+  // const result: IState = { ...state };
+  // result[action.type] = action.value;
+  // return result;
+}
+
+const App = () => {
+  const [state, dispatch] = useReducer(reducer, initialState)
+  const { grid, firstClick, arr, arrRemover } = state
+
+  // const [firstClick, setFirstClick] = useState(false)
 
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -121,12 +167,14 @@ const App = () => {
     // handle firstCLick
     if (event.type === "click") {
       if (!firstClick) {
-        setGrid(generateBombs(3, newGrid))
-        setFirstClick(true)
+        // dispatch({type: grid, generateBombs(arr, arrRemover, 3)})
+        dispatch({ type: "grid", grid, firstClick })
+        // setGrid(generateBombs(arr, arrRemover, 3))
+        // setFirstClick(true)
       }
       // setFirstClick((current) => {
       //   if (current === false) {
-      //     setGrid(generateBombs(3, newGrid))
+      //     // setGrid(generateBombs(arr, arrRemover, 3))
       //   }
       //   return true
       // })
@@ -149,7 +197,7 @@ const App = () => {
     } else if (event.type === "contextmenu") {
       newGrid[indexHeight][indexWidth].flag =
         !newGrid[indexHeight][indexWidth].flag
-      setGrid(newGrid)
+      // setGrid(newGrid)
       message = `Putting a flag`
     }
 
@@ -159,18 +207,32 @@ const App = () => {
   }
 
   const handleReset = () => {
-    setFirstClick(false)
-    setGrid(
-      new Array(gridHeight).fill(0).map(() =>
-        new Array(gridWidth).fill(0).map(() => {
-          return {
-            type: CellType.Cell,
-            flag: false,
-            clicked: false,
-          }
-        }),
-      ),
-    )
+    dispatch({ type: "reset" })
+
+    // setFirstClick(false)
+    // setGrid(
+    //   new Array(gridHeight).fill(0).map(() =>
+    //     new Array(gridWidth).fill(0).map(() => {
+    //       return {
+    //         type: CellType.Cell,
+    //         flag: false,
+    //         clicked: false,
+    //       }
+    //     }),
+    //   ),
+    // )
+    // setArrRemover([...Array(gridWidth * gridHeight).keys()])
+    // setArr([
+    //   ...Array(gridWidth * gridHeight)
+    //     .fill(0)
+    //     .map(() => {
+    //       return {
+    //         type: CellType.Cell,
+    //         flag: false,
+    //         clicked: false,
+    //       }
+    //     }),
+    // ])
   }
 
   return (
