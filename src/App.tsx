@@ -1,9 +1,9 @@
-import React, { useEffect, useReducer, useState } from "react"
+import React, { useEffect, useReducer } from "react"
 import Cell from "./components/Cell/Cell"
 import "./App.css"
 
-const gridWidth = 3
-const gridHeight = 3
+const gridWidth = 25
+const gridHeight = 15
 
 export type CellDetails = {
   type: CellType
@@ -15,6 +15,19 @@ enum CellType {
   Cell = 0,
   Bomb = 1,
 }
+
+interface IState {
+  arr: CellDetails[]
+  grid: CellDetails[][]
+  arrRemover: number[]
+  firstClick: boolean
+}
+
+type Action =
+  | { type: "reset" }
+  | { type: "createGrid"; grid: CellDetails[][]; firstClick: boolean }
+  | { type: "setFlag"; grid: CellDetails[][] }
+  | { type: "setClick"; grid: CellDetails[][] }
 
 export function getRandomArbitrary(min: number, max: number) {
   min = Math.floor(min)
@@ -31,7 +44,6 @@ function listToMatrix(list: CellDetails[], elementsPerSubArray: number) {
       matrix[k] = []
     }
 
-    console.log(list[i])
     matrix[k].push(list[i])
   }
 
@@ -42,40 +54,33 @@ function generateBombs(
   arr: CellDetails[],
   arrRemover: number[],
   bombsCount: number,
+  clickedCellIndex: number,
 ): CellDetails[][] {
-  const randomA = getRandomArbitrary(0, gridWidth * gridHeight - bombsCount) // ptn là c cassé
-  console.log(randomA, "randomA")
-  console.log(arrRemover, "arrRemover")
+  const randomA = getRandomArbitrary(0, arrRemover.length)
 
   if (bombsCount === 0) {
     const arrWithBombs = arr.map((item, index) => {
       if (!arrRemover.includes(index)) {
-        console.log(index, "index")
         return {
+          ...item,
           type: CellType.Bomb,
-          flag: false,
-          clicked: false,
+        }
+      } else if (clickedCellIndex === index) {
+        return {
+          ...item,
+          clicked: true,
         }
       } else return item
     })
 
     return listToMatrix(arrWithBombs, gridWidth)
+  } else if (clickedCellIndex === arrRemover[randomA]) {
+    return generateBombs(arr, arrRemover, bombsCount, clickedCellIndex)
   } else {
     arrRemover.splice(randomA, 1)
-    return generateBombs(arr, arrRemover, bombsCount - 1)
+    return generateBombs(arr, arrRemover, bombsCount - 1, clickedCellIndex)
   }
 }
-
-interface IState {
-  arr: CellDetails[]
-  grid: CellDetails[][]
-  arrRemover: number[]
-  firstClick: boolean
-}
-
-type Action =
-  | { type: "reset" }
-  | { type: "setGrid"; grid: CellDetails[][]; firstClick: boolean }
 
 const initialState: IState = {
   arr: [
@@ -98,38 +103,61 @@ const initialState: IState = {
       }
     }),
   ),
-  arrRemover: Array.from(Array(gridWidth * gridHeight).keys()),
+  arrRemover: [...Array(gridHeight * gridWidth).keys()],
   firstClick: false,
 }
-
-console.log(initialState)
 
 const reducer = (state: IState, action: Action): IState => {
   switch (action.type) {
     case "reset":
-      console.log(initialState, "initialState")
-
-      return { ...initialState }
-    case "setGrid":
-      console.log("case grid")
+      return {
+        ...initialState,
+        arrRemover: [...Array(gridHeight * gridWidth).keys()],
+        arr: [
+          ...Array(gridWidth * gridHeight)
+            .fill(0)
+            .map(() => {
+              return {
+                type: CellType.Cell,
+                flag: false,
+                clicked: false,
+              }
+            }),
+        ],
+        grid: new Array(gridHeight).fill(0).map(() =>
+          new Array(gridWidth).fill(0).map(() => {
+            return {
+              type: CellType.Cell,
+              flag: false,
+              clicked: false,
+            }
+          }),
+        ),
+      }
+    case "createGrid":
       return {
         ...state,
         grid: action.grid,
         firstClick: action.firstClick,
       }
+    case "setFlag":
+      return {
+        ...state,
+        grid: action.grid,
+      }
+    case "setClick":
+      return {
+        ...state,
+        grid: action.grid,
+      }
+    default:
+      throw new Error()
   }
 }
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const { grid, firstClick, arr, arrRemover } = state
-
-  // const [firstClick, setFirstClick] = useState(false)
-
-  // useEffect(() => {
-  //   console.log(arrRemover, "arrRemover")
-  //   console.log(grid, "grid")
-  // }, [arrRemover, grid])
 
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -141,14 +169,18 @@ const App = () => {
     event.preventDefault()
 
     let message
-    const newGrid = [...grid]
 
     // handle firstCLick
     if (event.type === "click") {
       if (!firstClick) {
         dispatch({
-          type: "setGrid",
-          grid: generateBombs(arr, arrRemover, 3),
+          type: "createGrid",
+          grid: generateBombs(
+            arr,
+            arrRemover,
+            Math.ceil((gridWidth * gridHeight) / 10),
+            indexHeight * indexWidth + indexWidth,
+          ),
           firstClick: true,
         })
       }
@@ -157,9 +189,18 @@ const App = () => {
     // synthetic event
     if (event.type === "click" && cell.type === CellType.Cell && cell.flag) {
       message = `Click on flag + normal`
-    } else if (event.type === "click" && cell.type === CellType.Cell) {
+    } else if (
+      event.type === "click" &&
+      cell.type === CellType.Cell &&
+      firstClick
+    ) {
       message = `Clearing cell`
-      newGrid[indexHeight][indexWidth].clicked = true
+
+      grid[indexHeight][indexWidth].clicked = true
+      dispatch({
+        type: "setClick",
+        grid: grid,
+      })
     } else if (
       event.type === "click" &&
       cell.type === CellType.Bomb &&
@@ -168,10 +209,15 @@ const App = () => {
       message = `Click on flag + bomb`
     } else if (event.type === "click" && cell.type === CellType.Bomb) {
       message = `Boum`
-    } else if (event.type === "contextmenu") {
-      newGrid[indexHeight][indexWidth].flag =
-        !newGrid[indexHeight][indexWidth].flag
-      // setGrid(newGrid)
+    } else if (event.type === "contextmenu" && firstClick) {
+      const newgrid = grid
+
+      newgrid[indexHeight][indexWidth].flag =
+        !newgrid[indexHeight][indexWidth].flag
+      dispatch({
+        type: "setFlag",
+        grid: newgrid,
+      })
       message = `Putting a flag`
     }
 
@@ -181,10 +227,12 @@ const App = () => {
   }
 
   const handleReset = () => {
-    console.log(grid, "grid")
     dispatch({ type: "reset" })
-    console.log(grid, "grid")
   }
+
+  useEffect(() => {
+    console.log(grid)
+  }, [grid])
 
   return (
     <div className="App">
