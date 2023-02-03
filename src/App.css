@@ -5,7 +5,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #eee;
+  background-color: #bed1fe;
 }
 
 table {
@@ -16,4 +16,32 @@ table {
 td {
   margin: 0;
   padding: 0;
+}
+
+button.reset {
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  padding: 12px;
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #cbe0ff, #abbce5);
+  box-shadow:  7px 7px 13px #a2b2d8,
+               -7px -7px 13px #dbf0ff;
+  margin-bottom: 20px;
+}
+
+button.reset:hover {
+  border-radius: 15px;
+  background: linear-gradient(145deg, #abbce5, #cbe0ff);
+  box-shadow:  7px 7px 13px #a2b2d8,
+             -7px -7px 13px #dbf0ff;
+}
+
+button.reset img {
+  width: 40px;
+}
+
+button.reset:hover img {
+  width: 39px;
 }

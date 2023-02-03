@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from "react"
+import React, { useReducer } from "react"
 import Cell from "./components/Cell/Cell"
 import "./App.css"
 
@@ -169,9 +169,10 @@ const App = () => {
     event.preventDefault()
 
     let message
+    console.log(event, "event")
 
     // handle firstCLick
-    if (event.type === "click") {
+    if (event.type === "mousedown" && event.button === 0) {
       if (!firstClick) {
         dispatch({
           type: "createGrid",
@@ -179,7 +180,7 @@ const App = () => {
             arr,
             arrRemover,
             Math.ceil((gridWidth * gridHeight) / 10),
-            indexHeight * indexWidth + indexWidth,
+            indexHeight * gridWidth + indexWidth,
           ),
           firstClick: true,
         })
@@ -187,10 +188,16 @@ const App = () => {
     }
 
     // synthetic event
-    if (event.type === "click" && cell.type === CellType.Cell && cell.flag) {
+    if (
+      event.type === "mousedown" &&
+      event.button === 0 &&
+      cell.type === CellType.Cell &&
+      cell.flag
+    ) {
       message = `Click on flag + normal`
     } else if (
-      event.type === "click" &&
+      event.type === "mousedown" &&
+      event.button === 0 &&
       cell.type === CellType.Cell &&
       firstClick
     ) {
@@ -202,14 +209,24 @@ const App = () => {
         grid: grid,
       })
     } else if (
-      event.type === "click" &&
+      event.type === "mousedown" &&
+      event.button === 0 &&
       cell.type === CellType.Bomb &&
       cell.flag
     ) {
       message = `Click on flag + bomb`
-    } else if (event.type === "click" && cell.type === CellType.Bomb) {
+    } else if (
+      event.type === "mousedown" &&
+      event.button === 0 &&
+      cell.type === CellType.Bomb
+    ) {
       message = `Boum`
-    } else if (event.type === "contextmenu" && firstClick) {
+    } else if (
+      event.type === "mousedown" &&
+      event.button === 2 &&
+      firstClick &&
+      !cell.clicked
+    ) {
       const newgrid = grid
 
       newgrid[indexHeight][indexWidth].flag =
@@ -230,14 +247,11 @@ const App = () => {
     dispatch({ type: "reset" })
   }
 
-  useEffect(() => {
-    console.log(grid)
-  }, [grid])
-
   return (
     <div className="App">
-      <h1>Still in game</h1>
-      <button onClick={handleReset}>Reset</button>
+      <button onClick={handleReset} className="reset">
+        <img src="./svg/reset.svg" alt="reset button" />
+      </button>
       <table>
         <tbody>
           {grid.map((rows, indexHeight) => {
@@ -248,10 +262,11 @@ const App = () => {
                     <Cell
                       key={indexWidth}
                       cell={cell}
-                      onClick={(e) => {
-                        handleClick(e, cell, indexHeight, indexWidth)
-                      }}
+                      index={indexWidth + indexHeight}
                       onContextMenu={(e) =>
+                        handleClick(e, cell, indexHeight, indexWidth)
+                      }
+                      onMouseDown={(e) =>
                         handleClick(e, cell, indexHeight, indexWidth)
                       }
                     />

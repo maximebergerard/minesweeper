@@ -2,26 +2,48 @@
   cursor: pointer;
   width: 32px;
   height: 32px;
+  background-color: #f2faff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-width: 2px;
   border-style: solid;
-  border-left-color: white;
-  border-top-color: white;
-  border-bottom-color: grey;
-  border-right-color: grey;
+  border:none;
 }
 
-.cell {
-  background-color: #ddd;
+.cell.index-0 {
+  background-color: #cbe0ff;
 }
 
-.bomb {
+.cell.index-1 {
+  background-color: #6da0f2;
+}
+
+.cell.bomb {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffcbcf;
+}
+
+.cell .bomb {
+  width: 16px;
+  height: 16px;
+  border-radius: 100%;
   background-color: red;
 }
 
 .cell:hover {
-  opacity: 0.5;
+  background-color: #f2faff;
 }
 
-.flagged {
-  background-color: blue;
-} 
+.flagged svg {
+  fill: #311b94;
+}
+
+.clicked-true  {
+  border-width: 2px;
+  border-style: solid;
+  border: none;
+  font-weight: bold;
+}
