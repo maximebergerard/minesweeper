@@ -33,7 +33,9 @@ const Cell = ({ cell, onClick, onContextMenu, onMouseDown, index }: Cell) => {
       </div>
     )
   } else if (cell.clicked) {
-    currentCell = <div className={`cell clicked-${cell.clicked}`}>1</div>
+    currentCell = (
+      <div className={`cell clicked-${cell.clicked}`}>{cell.bombsAround}</div>
+    )
   } else {
     currentCell = <div className={`cell index-${index % 2}`} />
   }

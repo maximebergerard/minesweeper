@@ -1,5 +1,6 @@
 import React, { useReducer } from "react"
 import Cell from "./components/Cell/Cell"
+import { MinesCounter } from "./utils"
 import "./App.css"
 
 const gridWidth = 25
@@ -9,9 +10,10 @@ export type CellDetails = {
   type: CellType
   flag: boolean
   clicked: boolean
+  bombsAround: number
 }
 
-enum CellType {
+export enum CellType {
   Cell = 0,
   Bomb = 1,
 }
@@ -73,7 +75,10 @@ function generateBombs(
       } else return item
     })
 
-    return listToMatrix(arrWithBombs, gridWidth)
+    return listToMatrix(
+      MinesCounter(arrWithBombs, gridWidth, gridHeight),
+      gridWidth,
+    )
   } else if (clickedCellIndex === arrRemover[randomA]) {
     return generateBombs(arr, arrRemover, bombsCount, clickedCellIndex)
   } else {
@@ -91,6 +96,7 @@ const initialState: IState = {
           type: CellType.Cell,
           flag: false,
           clicked: false,
+          bombsAround: 0,
         }
       }),
   ],
@@ -100,6 +106,7 @@ const initialState: IState = {
         type: CellType.Cell,
         flag: false,
         clicked: false,
+        bombsAround: 0,
       }
     }),
   ),
@@ -121,6 +128,7 @@ const reducer = (state: IState, action: Action): IState => {
                 type: CellType.Cell,
                 flag: false,
                 clicked: false,
+                bombsAround: 0,
               }
             }),
         ],
@@ -130,6 +138,7 @@ const reducer = (state: IState, action: Action): IState => {
               type: CellType.Cell,
               flag: false,
               clicked: false,
+              bombsAround: 0,
             }
           }),
         ),
@@ -169,7 +178,6 @@ const App = () => {
     event.preventDefault()
 
     let message
-    console.log(event, "event")
 
     // handle firstCLick
     if (event.type === "mousedown" && event.button === 0) {
