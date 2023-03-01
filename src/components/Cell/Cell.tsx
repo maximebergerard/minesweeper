@@ -34,10 +34,18 @@ const Cell = ({ cell, onClick, onContextMenu, onMouseDown, index }: Cell) => {
     )
   } else if (cell.clicked) {
     currentCell = (
-      <div className={`cell clicked-${cell.clicked}`}>{cell.bombsAround}</div>
+      <div
+        className={`cell clicked-${cell.clicked} index-${index % 2} bt-${
+          cell.borders[0]
+        } br-${cell.borders[1]} bb-${cell.borders[2]} bl-${cell.borders[3]}`}
+      >
+        {cell.bombsAround === 0 ? "" : cell.bombsAround}
+      </div>
     )
   } else {
-    currentCell = <div className={`cell index-${index % 2}`} />
+    currentCell = (
+      <div className={`cell clicked-${cell.clicked} index-${index % 2}`} />
+    )
   }
 
   return (

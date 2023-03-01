@@ -3,14 +3,15 @@ import Cell from "./components/Cell/Cell"
 import { MinesCounter } from "./utils"
 import "./App.css"
 
-const gridWidth = 25
-const gridHeight = 15
+const gridWidth = 10
+const gridHeight = 8
 
 export type CellDetails = {
   type: CellType
   flag: boolean
   clicked: boolean
   bombsAround: number
+  borders: [boolean, boolean, boolean, boolean]
 }
 
 export enum CellType {
@@ -88,18 +89,15 @@ function generateBombs(
 }
 
 const initialState: IState = {
-  arr: [
-    ...Array(gridWidth * gridHeight)
-      .fill(0)
-      .map(() => {
-        return {
-          type: CellType.Cell,
-          flag: false,
-          clicked: false,
-          bombsAround: 0,
-        }
-      }),
-  ],
+  arr: new Array(gridWidth * gridHeight).fill(0).map(() => {
+    return {
+      type: CellType.Cell,
+      flag: false,
+      clicked: false,
+      bombsAround: 0,
+      borders: [false, false, false, false],
+    }
+  }),
   grid: new Array(gridHeight).fill(0).map(() =>
     new Array(gridWidth).fill(0).map(() => {
       return {
@@ -107,6 +105,7 @@ const initialState: IState = {
         flag: false,
         clicked: false,
         bombsAround: 0,
+        borders: [false, false, false, false],
       }
     }),
   ),
@@ -120,18 +119,17 @@ const reducer = (state: IState, action: Action): IState => {
       return {
         ...initialState,
         arrRemover: [...Array(gridHeight * gridWidth).keys()],
-        arr: [
-          ...Array(gridWidth * gridHeight)
-            .fill(0)
-            .map(() => {
-              return {
-                type: CellType.Cell,
-                flag: false,
-                clicked: false,
-                bombsAround: 0,
-              }
-            }),
-        ],
+        arr: Array(gridWidth * gridHeight)
+          .fill(0)
+          .map(() => {
+            return {
+              type: CellType.Cell,
+              flag: false,
+              clicked: false,
+              bombsAround: 0,
+              borders: [false, false, false, false],
+            }
+          }),
         grid: new Array(gridHeight).fill(0).map(() =>
           new Array(gridWidth).fill(0).map(() => {
             return {
@@ -139,6 +137,7 @@ const reducer = (state: IState, action: Action): IState => {
               flag: false,
               clicked: false,
               bombsAround: 0,
+              borders: [false, false, false, false],
             }
           }),
         ),
@@ -187,7 +186,8 @@ const App = () => {
           grid: generateBombs(
             arr,
             arrRemover,
-            Math.ceil((gridWidth * gridHeight) / 10),
+            // Math.ceil((gridWidth * gridHeight) / 10),
+            10,
             indexHeight * gridWidth + indexWidth,
           ),
           firstClick: true,
@@ -212,6 +212,14 @@ const App = () => {
       message = `Clearing cell`
 
       grid[indexHeight][indexWidth].clicked = true
+
+      if (grid[indexHeight][indexWidth].bombsAround === 0) {
+        grid[indexHeight - 1][indexWidth].clicked = true
+        grid[indexHeight + 1][indexWidth].clicked = true
+        //petite fonction récursive
+      }
+      console.log(grid)
+
       dispatch({
         type: "setClick",
         grid: grid,
