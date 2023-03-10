@@ -1,6 +1,6 @@
 import React, { useReducer } from "react"
 import Cell from "./components/Cell/Cell"
-import { MinesCounter } from "./utils"
+import { MinesCounter, ClearingNearbyCellsUtils } from "./utils"
 import "./App.css"
 
 const gridWidth = 10
@@ -59,7 +59,7 @@ function generateBombs(
   bombsCount: number,
   clickedCellIndex: number,
 ): CellDetails[][] {
-  const randomA = getRandomArbitrary(0, arrRemover.length)
+  const randomNumber = getRandomArbitrary(0, arrRemover.length)
 
   if (bombsCount === 0) {
     const arrWithBombs = arr.map((item, index) => {
@@ -76,14 +76,36 @@ function generateBombs(
       } else return item
     })
 
+    ClearingNearbyCellsUtils(
+      1,
+      1,
+      listToMatrix(
+        MinesCounter(arrWithBombs, gridWidth, gridHeight),
+        gridWidth,
+      ),
+      gridWidth,
+      gridHeight,
+    )
+
     return listToMatrix(
       MinesCounter(arrWithBombs, gridWidth, gridHeight),
       gridWidth,
     )
-  } else if (clickedCellIndex === arrRemover[randomA]) {
+  } else if (
+    // Bombs can't be defined around the first click
+    clickedCellIndex === arrRemover[randomNumber] ||
+    clickedCellIndex + 1 === arrRemover[randomNumber] ||
+    clickedCellIndex - 1 === arrRemover[randomNumber] ||
+    clickedCellIndex - gridWidth === arrRemover[randomNumber] ||
+    clickedCellIndex - gridWidth - 1 === arrRemover[randomNumber] ||
+    clickedCellIndex - gridWidth + 1 === arrRemover[randomNumber] ||
+    clickedCellIndex + gridWidth === arrRemover[randomNumber] ||
+    clickedCellIndex + gridWidth - 1 === arrRemover[randomNumber] ||
+    clickedCellIndex + gridWidth + 1 === arrRemover[randomNumber]
+  ) {
     return generateBombs(arr, arrRemover, bombsCount, clickedCellIndex)
   } else {
-    arrRemover.splice(randomA, 1)
+    arrRemover.splice(randomNumber, 1)
     return generateBombs(arr, arrRemover, bombsCount - 1, clickedCellIndex)
   }
 }
@@ -211,14 +233,15 @@ const App = () => {
     ) {
       message = `Clearing cell`
 
-      grid[indexHeight][indexWidth].clicked = true
+      ClearingNearbyCellsUtils(
+        indexHeight,
+        indexWidth,
+        grid,
+        gridWidth,
+        gridHeight,
+      )
 
-      if (grid[indexHeight][indexWidth].bombsAround === 0) {
-        grid[indexHeight - 1][indexWidth].clicked = true
-        grid[indexHeight + 1][indexWidth].clicked = true
-        //petite fonction récursive
-      }
-      console.log(grid)
+      grid[indexHeight][indexWidth].clicked = true
 
       dispatch({
         type: "setClick",
