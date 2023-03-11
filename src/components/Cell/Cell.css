@@ -49,19 +49,19 @@
   border-left: 2px solid green;
 } */
 
-.cell.bomb {
+/* .cell.bomb {
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #ffcbcf;
-}
+} */
 
-.cell .bomb {
+/* .cell .bomb {
   width: 16px;
   height: 16px;
   border-radius: 100%;
   background-color: red;
-}
+} */
 
 .cell:hover {
   background-color: #f2faff;

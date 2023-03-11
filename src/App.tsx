@@ -3,8 +3,9 @@ import Cell from "./components/Cell/Cell"
 import { MinesCounter, ClearingNearbyCellsUtils } from "./utils"
 import "./App.css"
 
-const gridWidth = 10
-const gridHeight = 8
+const gridWidth = 25
+const gridHeight = 15
+const bombsCount = Math.ceil((gridWidth * gridHeight) / 10)
 
 export type CellDetails = {
   type: CellType
@@ -24,6 +25,7 @@ interface IState {
   grid: CellDetails[][]
   arrRemover: number[]
   firstClick: boolean
+  flagCount: number
 }
 
 type Action =
@@ -57,9 +59,11 @@ function generateBombs(
   arr: CellDetails[],
   arrRemover: number[],
   bombsCount: number,
-  clickedCellIndex: number,
+  indexHeight: number,
+  indexWidth: number,
 ): CellDetails[][] {
   const randomNumber = getRandomArbitrary(0, arrRemover.length)
+  const clickedCellIndex = indexHeight * gridWidth + indexWidth
 
   if (bombsCount === 0) {
     const arrWithBombs = arr.map((item, index) => {
@@ -68,17 +72,12 @@ function generateBombs(
           ...item,
           type: CellType.Bomb,
         }
-      } else if (clickedCellIndex === index) {
-        return {
-          ...item,
-          clicked: true,
-        }
       } else return item
     })
 
     ClearingNearbyCellsUtils(
-      1,
-      1,
+      indexHeight,
+      indexWidth,
       listToMatrix(
         MinesCounter(arrWithBombs, gridWidth, gridHeight),
         gridWidth,
@@ -87,9 +86,15 @@ function generateBombs(
       gridHeight,
     )
 
-    return listToMatrix(
-      MinesCounter(arrWithBombs, gridWidth, gridHeight),
+    return ClearingNearbyCellsUtils(
+      indexHeight,
+      indexWidth,
+      listToMatrix(
+        MinesCounter(arrWithBombs, gridWidth, gridHeight),
+        gridWidth,
+      ),
       gridWidth,
+      gridHeight,
     )
   } else if (
     // Bombs can't be defined around the first click
@@ -103,10 +108,16 @@ function generateBombs(
     clickedCellIndex + gridWidth - 1 === arrRemover[randomNumber] ||
     clickedCellIndex + gridWidth + 1 === arrRemover[randomNumber]
   ) {
-    return generateBombs(arr, arrRemover, bombsCount, clickedCellIndex)
+    return generateBombs(arr, arrRemover, bombsCount, indexHeight, indexWidth)
   } else {
     arrRemover.splice(randomNumber, 1)
-    return generateBombs(arr, arrRemover, bombsCount - 1, clickedCellIndex)
+    return generateBombs(
+      arr,
+      arrRemover,
+      bombsCount - 1,
+      indexHeight,
+      indexWidth,
+    )
   }
 }
 
@@ -133,6 +144,7 @@ const initialState: IState = {
   ),
   arrRemover: [...Array(gridHeight * gridWidth).keys()],
   firstClick: false,
+  flagCount: bombsCount,
 }
 
 const reducer = (state: IState, action: Action): IState => {
@@ -208,9 +220,9 @@ const App = () => {
           grid: generateBombs(
             arr,
             arrRemover,
-            // Math.ceil((gridWidth * gridHeight) / 10),
-            10,
-            indexHeight * gridWidth + indexWidth,
+            bombsCount,
+            indexHeight,
+            indexWidth,
           ),
           firstClick: true,
         })
@@ -288,9 +300,12 @@ const App = () => {
 
   return (
     <div className="App">
-      <button onClick={handleReset} className="reset">
-        <img src="./svg/reset.svg" alt="reset button" />
-      </button>
+      <div style={{ display: "flex" }}>
+        <button onClick={handleReset} className="reset">
+          <img src="./svg/reset.svg" alt="reset button" />
+        </button>
+        {/* <div className="counter">{state.flagCount}</div> */}
+      </div>
       <table>
         <tbody>
           {grid.map((rows, indexHeight) => {

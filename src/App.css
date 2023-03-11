@@ -45,3 +45,10 @@ button.reset img {
 button.reset:hover img {
   width: 39px;
 }
+
+.counter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 24px;
+}

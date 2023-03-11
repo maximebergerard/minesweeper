@@ -1,5 +1,5 @@
 import { CellDetails, CellType } from "../App"
-import CellBorders from "./CellBordersUtils"
+// import CellBorders from "./CellBordersUtils"
 
 const MinesAround = (
   arrWithBombs: CellDetails[],
@@ -223,7 +223,8 @@ const MinesAround = (
     }
   })
 
-  return CellBorders(arr, gridWidth)
+  // return CellBorders(arr, gridWidth)
+  return arr
 }
 
 export default MinesAround

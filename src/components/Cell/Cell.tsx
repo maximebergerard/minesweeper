@@ -28,7 +28,7 @@ const Cell = ({ cell, onClick, onContextMenu, onMouseDown, index }: Cell) => {
     )
   } else if (cell.type === 1) {
     currentCell = (
-      <div className={`cell bomb`}>
+      <div className={`cell clicked-${cell.clicked} index-${index % 2}`}>
         <div className="bomb" />
       </div>
     )
