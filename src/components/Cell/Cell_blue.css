@@ -1,0 +1,93 @@
+.cell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border:none;
+  box-sizing: border-box;
+}
+
+.clicked-true:hover.index-0 {
+  background-color: #c5edc2;
+  cursor: default;
+}
+.clicked-true:hover.index-1 {
+  background-color: #9ccc99;
+  cursor: default;
+}
+
+.clicked-false.index-0 {
+  background-color: #cbe0ff;
+  cursor: pointer;
+}
+
+.clicked-false.index-1, cell.flagged.index-1 {
+  background-color: #6da0f2;
+  cursor: pointer;
+}
+
+.clicked-true.index-0 {
+  background-color: #c5edc2;
+}
+.clicked-true.index-1 {
+  background-color: #9ccc99;
+}
+
+/* .cell.clicked-true.bt-true {
+  border-top: 2px solid green;
+}
+
+.cell.clicked-true.br-true {
+  border-right: 2px solid green;
+}
+.cell.clicked-true.bb-true {
+  border-bottom: 2px solid green;
+}
+
+.cell.clicked-true.bl-true {
+  border-left: 2px solid green;
+} */
+
+.cell.bomb {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffcbcf;
+} 
+
+.cell.bomb > div {
+  width: 16px;
+  height: 16px;
+  border-radius: 100%;
+  background-color: red;
+}
+
+.clicked-true:hover.index-0.bomb {
+  background-color: #ffcbcf;
+  cursor: default;
+}
+.clicked-true:hover.index-1.bomb {
+  background-color:#ffcbcf;
+  cursor: default;
+}
+
+.cell:hover {
+  background-color: #f2faff;
+}
+
+.cell.flagged.index-0 {
+  background-color: #cbe0ff;
+}
+.cell.flagged.index-1 {
+  background-color: #6da0f2;
+}
+
+.flagged svg {
+  scale: 80%;
+  fill: #311b94;
+}
+
+.clicked-true {
+  font-weight: bold;
+}

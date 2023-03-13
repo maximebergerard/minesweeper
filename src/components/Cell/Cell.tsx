@@ -26,18 +26,22 @@ const Cell = ({ cell, onClick, onContextMenu, onMouseDown, index }: Cell) => {
         </svg>{" "}
       </div>
     )
+  } else if (cell.type === 1 && cell.clicked) {
+    currentCell = (
+      <div className={`cell clicked-${cell.clicked} index-${index % 2} bomb`}>
+        <div />
+      </div>
+    )
   } else if (cell.type === 1) {
     currentCell = (
-      <div className={`cell clicked-${cell.clicked} index-${index % 2}`}>
-        <div className="bomb" />
-      </div>
+      <div className={`cell clicked-${cell.clicked} index-${index % 2}`} />
     )
   } else if (cell.clicked) {
     currentCell = (
       <div
-        className={`cell clicked-${cell.clicked} index-${index % 2} bt-${
-          cell.borders[0]
-        } br-${cell.borders[1]} bb-${cell.borders[2]} bl-${cell.borders[3]}`}
+        className={`cell clicked-${cell.clicked} index-${
+          index % 2
+        } bombs-around-${cell.bombsAround}`}
       >
         {cell.bombsAround === 0 ? "" : cell.bombsAround}
       </div>

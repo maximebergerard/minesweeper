@@ -6,84 +6,73 @@
   align-items: center;
   border:none;
   box-sizing: border-box;
+  background-color: #C0C0C0;
+  border-left: #FFFFFF 4px solid;
+  border-top: #FFFFFF 4px solid;
+  border-right: #808080 4px solid;
+  border-bottom: #808080 4px solid;
 }
 
-.clicked-true:hover.index-0 {
-  background-color: #c5edc2;
-  cursor: default;
-}
-.clicked-true:hover.index-1 {
-  background-color: #9ccc99;
-  cursor: default;
-}
-
-.clicked-false.index-0 {
-  background-color: #cbe0ff;
+.cell.clicked-false:hover {
+  background-color: #f2faff;
   cursor: pointer;
 }
 
-.clicked-false.index-1, cell.flagged.index-1 {
-  background-color: #6da0f2;
-  cursor: pointer;
+.clicked-true {
+  background-color: #C0C0C0;
+  border: #808080 1px solid;
 }
 
-.clicked-true.index-0 {
-  background-color: #c5edc2;
-}
-.clicked-true.index-1 {
-  background-color: #9ccc99;
+.clicked-true:hover {
+  cursor: default;
 }
 
-/* .cell.clicked-true.bt-true {
-  border-top: 2px solid green;
-}
-
-.cell.clicked-true.br-true {
-  border-right: 2px solid green;
-}
-.cell.clicked-true.bb-true {
-  border-bottom: 2px solid green;
-}
-
-.cell.clicked-true.bl-true {
-  border-left: 2px solid green;
-} */
-
-/* .cell.bomb {
+.cell.bomb {
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #ffcbcf;
-} */
+} 
 
-/* .cell .bomb {
+.cell.bomb > div {
   width: 16px;
   height: 16px;
   border-radius: 100%;
   background-color: red;
-} */
-
-.cell:hover {
-  background-color: #f2faff;
 }
 
-.cell.flagged.index-0 {
-  background-color: #cbe0ff;
-}
-.cell.flagged.index-1 {
-  background-color: #6da0f2;
+.flagged {
+  cursor: pointer;
 }
 
 .flagged svg {
-  fill: #311b94;
+  scale: 80%;
+  fill: red;
 }
 
 .clicked-true {
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-/* .clicked-false {
-  border-width: 2px;
-  border-style: groove;
-  border-color: #c7ceff #c7ceff #0e1c78 #0e1c78;
-} */
+.bombs-around-1 {
+  color: blue;
+}
+.bombs-around-2 {
+  color: green;
+}
+.bombs-around-3 {
+  color: red;
+}
+.bombs-around-4 {
+  color: darkblue;
+}
+.bombs-around-5 {
+  color: brown;
+}
+.bombs-around-6 {
+  color: turquoise;
+}
+.bombs-around-7 {
+  color: grey;
+}

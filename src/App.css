@@ -6,10 +6,15 @@
   justify-content: center;
   align-items: center;
   background-color: #bed1fe;
+  /* background-color: #C0C0C0; */
 }
 
 table {
   border-collapse: collapse;
+  border-left: 4px #808080 solid;
+  border-top: 4px #808080 solid;
+  border-right: 4px #FFFFFF solid;
+  border-bottom: 4px #FFFFFF solid;
   border-spacing: 0;
 }
 
@@ -51,4 +56,16 @@ button.reset:hover img {
   justify-content: center;
   align-items: center;
   margin-left: 24px;
+}
+
+@media screen and (max-width: 800px) {
+  .App {
+    width: 100%;
+    overflow: scroll;
+    padding: 0 24px;
+  }
+
+  table {
+    margin-left: 200px;
+  }
 }

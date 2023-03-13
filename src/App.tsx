@@ -1,12 +1,11 @@
 import React, { useReducer } from "react"
 import Cell from "./components/Cell/Cell"
-import { MinesCounter, ClearingNearbyCellsUtils } from "./utils"
+import { ClearingNearbyCells, GenerateBombs } from "./utils"
 import "./App.css"
 
 const gridWidth = 25
 const gridHeight = 15
-const bombsCount = Math.ceil((gridWidth * gridHeight) / 10)
-
+const bombsCount = 60
 export type CellDetails = {
   type: CellType
   flag: boolean
@@ -31,95 +30,8 @@ interface IState {
 type Action =
   | { type: "reset" }
   | { type: "createGrid"; grid: CellDetails[][]; firstClick: boolean }
-  | { type: "setFlag"; grid: CellDetails[][] }
+  | { type: "setFlag"; grid: CellDetails[][]; flagCount: number }
   | { type: "setClick"; grid: CellDetails[][] }
-
-export function getRandomArbitrary(min: number, max: number) {
-  min = Math.floor(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min) + min)
-}
-
-function listToMatrix(list: CellDetails[], elementsPerSubArray: number) {
-  const matrix: CellDetails[][] = []
-
-  for (let i = 0, k = -1; i < list.length; i++) {
-    if (i % elementsPerSubArray === 0) {
-      k++
-      matrix[k] = []
-    }
-
-    matrix[k].push(list[i])
-  }
-
-  return matrix
-}
-
-function generateBombs(
-  arr: CellDetails[],
-  arrRemover: number[],
-  bombsCount: number,
-  indexHeight: number,
-  indexWidth: number,
-): CellDetails[][] {
-  const randomNumber = getRandomArbitrary(0, arrRemover.length)
-  const clickedCellIndex = indexHeight * gridWidth + indexWidth
-
-  if (bombsCount === 0) {
-    const arrWithBombs = arr.map((item, index) => {
-      if (!arrRemover.includes(index)) {
-        return {
-          ...item,
-          type: CellType.Bomb,
-        }
-      } else return item
-    })
-
-    ClearingNearbyCellsUtils(
-      indexHeight,
-      indexWidth,
-      listToMatrix(
-        MinesCounter(arrWithBombs, gridWidth, gridHeight),
-        gridWidth,
-      ),
-      gridWidth,
-      gridHeight,
-    )
-
-    return ClearingNearbyCellsUtils(
-      indexHeight,
-      indexWidth,
-      listToMatrix(
-        MinesCounter(arrWithBombs, gridWidth, gridHeight),
-        gridWidth,
-      ),
-      gridWidth,
-      gridHeight,
-    )
-  } else if (
-    // Bombs can't be defined around the first click
-    clickedCellIndex === arrRemover[randomNumber] ||
-    clickedCellIndex + 1 === arrRemover[randomNumber] ||
-    clickedCellIndex - 1 === arrRemover[randomNumber] ||
-    clickedCellIndex - gridWidth === arrRemover[randomNumber] ||
-    clickedCellIndex - gridWidth - 1 === arrRemover[randomNumber] ||
-    clickedCellIndex - gridWidth + 1 === arrRemover[randomNumber] ||
-    clickedCellIndex + gridWidth === arrRemover[randomNumber] ||
-    clickedCellIndex + gridWidth - 1 === arrRemover[randomNumber] ||
-    clickedCellIndex + gridWidth + 1 === arrRemover[randomNumber]
-  ) {
-    return generateBombs(arr, arrRemover, bombsCount, indexHeight, indexWidth)
-  } else {
-    arrRemover.splice(randomNumber, 1)
-    return generateBombs(
-      arr,
-      arrRemover,
-      bombsCount - 1,
-      indexHeight,
-      indexWidth,
-    )
-  }
-}
 
 const initialState: IState = {
   arr: new Array(gridWidth * gridHeight).fill(0).map(() => {
@@ -186,6 +98,7 @@ const reducer = (state: IState, action: Action): IState => {
       return {
         ...state,
         grid: action.grid,
+        flagCount: state.flagCount + action.flagCount,
       }
     case "setClick":
       return {
@@ -217,12 +130,14 @@ const App = () => {
       if (!firstClick) {
         dispatch({
           type: "createGrid",
-          grid: generateBombs(
+          grid: GenerateBombs(
             arr,
             arrRemover,
             bombsCount,
             indexHeight,
             indexWidth,
+            gridWidth,
+            gridHeight,
           ),
           firstClick: true,
         })
@@ -245,13 +160,7 @@ const App = () => {
     ) {
       message = `Clearing cell`
 
-      ClearingNearbyCellsUtils(
-        indexHeight,
-        indexWidth,
-        grid,
-        gridWidth,
-        gridHeight,
-      )
+      ClearingNearbyCells(indexHeight, indexWidth, grid, gridWidth, gridHeight)
 
       grid[indexHeight][indexWidth].clicked = true
 
@@ -272,21 +181,35 @@ const App = () => {
       cell.type === CellType.Bomb
     ) {
       message = `Boum`
+      grid[indexHeight][indexWidth].clicked = true
+      dispatch({
+        type: "setClick",
+        grid: grid,
+      })
     } else if (
       event.type === "mousedown" &&
       event.button === 2 &&
       firstClick &&
       !cell.clicked
     ) {
-      const newgrid = grid
+      if (state.flagCount > 0) {
+        grid[indexHeight][indexWidth].flag = !grid[indexHeight][indexWidth].flag
 
-      newgrid[indexHeight][indexWidth].flag =
-        !newgrid[indexHeight][indexWidth].flag
-      dispatch({
-        type: "setFlag",
-        grid: newgrid,
-      })
-      message = `Putting a flag`
+        if (grid[indexHeight][indexWidth].flag) {
+          dispatch({
+            type: "setFlag",
+            grid: grid,
+            flagCount: -1,
+          })
+        } else {
+          dispatch({
+            type: "setFlag",
+            grid: grid,
+            flagCount: 1,
+          })
+        }
+        message = `Putting a flag`
+      }
     }
 
     if (message) {
@@ -304,7 +227,7 @@ const App = () => {
         <button onClick={handleReset} className="reset">
           <img src="./svg/reset.svg" alt="reset button" />
         </button>
-        {/* <div className="counter">{state.flagCount}</div> */}
+        <div className="counter">{state.flagCount}</div>
       </div>
       <table>
         <tbody>
@@ -329,6 +252,27 @@ const App = () => {
               </tr>
             )
           })}
+          {/* {grid.map((rows, indexHeight) => {
+            return (
+              <tr key={indexHeight}>
+                {rows.map((cell, indexWidth) => {
+                  return (
+                    <Cell
+                      key={indexWidth}
+                      cell={cell}
+                      index={indexWidth + indexHeight}
+                      onContextMenu={(e) =>
+                        handleClick(e, cell, indexHeight, indexWidth)
+                      }
+                      onMouseDown={(e) =>
+                        handleClick(e, cell, indexHeight, indexWidth)
+                      }
+                    />
+                  )
+                })}
+              </tr>
+            )
+          })} */}
         </tbody>
       </table>
     </div>
