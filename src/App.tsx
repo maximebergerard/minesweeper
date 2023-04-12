@@ -1,6 +1,10 @@
 import React, { useReducer } from "react"
 import Cell from "./components/Cell/Cell"
-import { ClearingNearbyCells, GenerateBombs } from "./utils"
+import {
+  ClearingNearbyCells,
+  GenerateBombs,
+  DoubleClickClearingUtils,
+} from "./utils"
 import "./App.css"
 
 const gridWidth = 25
@@ -11,7 +15,6 @@ export type CellDetails = {
   flag: boolean
   clicked: boolean
   bombsAround: number
-  borders: [boolean, boolean, boolean, boolean]
 }
 
 export enum CellType {
@@ -25,6 +28,8 @@ interface IState {
   arrRemover: number[]
   firstClick: boolean
   flagCount: number
+  leftButtonDown: boolean
+  rightButtonDown: boolean
 }
 
 type Action =
@@ -32,6 +37,8 @@ type Action =
   | { type: "createGrid"; grid: CellDetails[][]; firstClick: boolean }
   | { type: "setFlag"; grid: CellDetails[][]; flagCount: number }
   | { type: "setClick"; grid: CellDetails[][] }
+  | { type: "leftClick"; leftButtonDown: boolean }
+  | { type: "rightClick"; rightButtonDown: boolean }
 
 const initialState: IState = {
   arr: new Array(gridWidth * gridHeight).fill(0).map(() => {
@@ -40,7 +47,6 @@ const initialState: IState = {
       flag: false,
       clicked: false,
       bombsAround: 0,
-      borders: [false, false, false, false],
     }
   }),
   grid: new Array(gridHeight).fill(0).map(() =>
@@ -50,13 +56,14 @@ const initialState: IState = {
         flag: false,
         clicked: false,
         bombsAround: 0,
-        borders: [false, false, false, false],
       }
     }),
   ),
   arrRemover: [...Array(gridHeight * gridWidth).keys()],
   firstClick: false,
   flagCount: bombsCount,
+  leftButtonDown: false,
+  rightButtonDown: false,
 }
 
 const reducer = (state: IState, action: Action): IState => {
@@ -73,7 +80,6 @@ const reducer = (state: IState, action: Action): IState => {
               flag: false,
               clicked: false,
               bombsAround: 0,
-              borders: [false, false, false, false],
             }
           }),
         grid: new Array(gridHeight).fill(0).map(() =>
@@ -83,7 +89,6 @@ const reducer = (state: IState, action: Action): IState => {
               flag: false,
               clicked: false,
               bombsAround: 0,
-              borders: [false, false, false, false],
             }
           }),
         ),
@@ -105,6 +110,16 @@ const reducer = (state: IState, action: Action): IState => {
         ...state,
         grid: action.grid,
       }
+    case "leftClick":
+      return {
+        ...state,
+        leftButtonDown: action.leftButtonDown,
+      }
+    case "rightClick":
+      return {
+        ...state,
+        rightButtonDown: action.rightButtonDown,
+      }
     default:
       throw new Error()
   }
@@ -112,7 +127,8 @@ const reducer = (state: IState, action: Action): IState => {
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { grid, firstClick, arr, arrRemover } = state
+  const { grid, firstClick, arr, arrRemover, rightButtonDown, leftButtonDown } =
+    state
 
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -125,7 +141,7 @@ const App = () => {
 
     let message
 
-    // handle firstCLick
+    // handle first left click
     if (event.type === "mousedown" && event.button === 0) {
       if (!firstClick) {
         dispatch({
@@ -146,6 +162,7 @@ const App = () => {
 
     // synthetic event
     if (
+      // left click on flag + normal cell
       event.type === "mousedown" &&
       event.button === 0 &&
       cell.type === CellType.Cell &&
@@ -153,22 +170,59 @@ const App = () => {
     ) {
       message = `Click on flag + normal`
     } else if (
+      // left click on cell
       event.type === "mousedown" &&
       event.button === 0 &&
       cell.type === CellType.Cell &&
+      cell.clicked === false &&
       firstClick
     ) {
       message = `Clearing cell`
-
-      ClearingNearbyCells(indexHeight, indexWidth, grid, gridWidth, gridHeight)
 
       grid[indexHeight][indexWidth].clicked = true
 
       dispatch({
         type: "setClick",
-        grid: grid,
+        grid: ClearingNearbyCells(
+          indexHeight,
+          indexWidth,
+          grid,
+          gridWidth,
+          gridHeight,
+        ),
       })
     } else if (
+      // right then left click
+      event.type === "mousedown" &&
+      event.button === 0 &&
+      firstClick &&
+      cell.clicked &&
+      rightButtonDown
+    ) {
+      dispatch({
+        type: "setClick",
+        grid: DoubleClickClearingUtils(
+          indexHeight,
+          indexWidth,
+          grid,
+          gridWidth,
+          gridHeight,
+        ),
+      })
+    } else if (
+      // left click on cleared cell
+      event.type === "mousedown" &&
+      event.button === 0 &&
+      cell.type === CellType.Cell &&
+      cell.clicked &&
+      firstClick
+    ) {
+      dispatch({
+        type: "leftClick",
+        leftButtonDown: true,
+      })
+    } else if (
+      // left click on a flagged bomb cell
       event.type === "mousedown" &&
       event.button === 0 &&
       cell.type === CellType.Bomb &&
@@ -176,6 +230,7 @@ const App = () => {
     ) {
       message = `Click on flag + bomb`
     } else if (
+      // left click on a sell with a bomb
       event.type === "mousedown" &&
       event.button === 0 &&
       cell.type === CellType.Bomb
@@ -187,6 +242,7 @@ const App = () => {
         grid: grid,
       })
     } else if (
+      // right click on a cell
       event.type === "mousedown" &&
       event.button === 2 &&
       firstClick &&
@@ -210,6 +266,45 @@ const App = () => {
         }
         message = `Putting a flag`
       }
+    } else if (
+      // left then right click
+      event.type === "mousedown" &&
+      event.button === 2 &&
+      firstClick &&
+      cell.clicked &&
+      leftButtonDown
+    ) {
+      dispatch({
+        type: "setClick",
+        grid: DoubleClickClearingUtils(
+          indexHeight,
+          indexWidth,
+          grid,
+          gridWidth,
+          gridHeight,
+        ),
+      })
+    } else if (
+      event.type === "mousedown" &&
+      event.button === 2 &&
+      cell.type === CellType.Cell &&
+      cell.clicked &&
+      firstClick
+    ) {
+      dispatch({
+        type: "rightClick",
+        rightButtonDown: true,
+      })
+    } else if (event.type === "mouseup" && event.button === 0) {
+      dispatch({
+        type: "leftClick",
+        leftButtonDown: false,
+      })
+    } else if (event.type === "mouseup" && event.button === 2) {
+      dispatch({
+        type: "rightClick",
+        rightButtonDown: false,
+      })
     }
 
     if (message) {
@@ -246,33 +341,15 @@ const App = () => {
                       onMouseDown={(e) =>
                         handleClick(e, cell, indexHeight, indexWidth)
                       }
+                      onMouseUp={(e) =>
+                        handleClick(e, cell, indexHeight, indexWidth)
+                      }
                     />
                   )
                 })}
               </tr>
             )
           })}
-          {/* {grid.map((rows, indexHeight) => {
-            return (
-              <tr key={indexHeight}>
-                {rows.map((cell, indexWidth) => {
-                  return (
-                    <Cell
-                      key={indexWidth}
-                      cell={cell}
-                      index={indexWidth + indexHeight}
-                      onContextMenu={(e) =>
-                        handleClick(e, cell, indexHeight, indexWidth)
-                      }
-                      onMouseDown={(e) =>
-                        handleClick(e, cell, indexHeight, indexWidth)
-                      }
-                    />
-                  )
-                })}
-              </tr>
-            )
-          })} */}
         </tbody>
       </table>
     </div>

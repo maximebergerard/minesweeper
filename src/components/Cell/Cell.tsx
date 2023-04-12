@@ -7,10 +7,18 @@ interface Cell {
   onClick?: React.MouseEventHandler<HTMLTableCellElement>
   onContextMenu?: React.MouseEventHandler<HTMLTableCellElement>
   onMouseDown: React.MouseEventHandler<HTMLTableCellElement>
+  onMouseUp: React.MouseEventHandler<HTMLTableCellElement>
   index: number
 }
 
-const Cell = ({ cell, onClick, onContextMenu, onMouseDown, index }: Cell) => {
+const Cell = ({
+  cell,
+  onClick,
+  onContextMenu,
+  onMouseDown,
+  onMouseUp,
+  index,
+}: Cell) => {
   let currentCell
 
   if (cell.flag) {
@@ -57,6 +65,7 @@ const Cell = ({ cell, onClick, onContextMenu, onMouseDown, index }: Cell) => {
       onClick={onClick}
       onContextMenu={onContextMenu}
       onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
     >
       {currentCell}
     </td>

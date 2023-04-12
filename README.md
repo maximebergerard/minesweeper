@@ -28,8 +28,11 @@ See the section about [running tests](https://facebook.github.io/create-react-ap
 - [x] Handle right click for flags
 - [x] Nearby bombs colored text
 - [x] Flags counter
-- [ ] Good UI
+- [ ] Add tests 
 - [ ] Game over
-- [ ] Double click cleaning 
+- [x] Double click cleaning 
 - [ ] Mobile friendly
+- [ ] Good UI
+- [ ] Customizable grid size
+- [ ] Create a competitive ladder
 - [ ] 3D Minesweeper ? 

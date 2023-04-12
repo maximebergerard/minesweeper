@@ -134,6 +134,7 @@ const ClearingNearbyCellsUtils = (
     if (
       iHeight < gridHeight - 1 &&
       iWidth > 0 &&
+      !clearedGrid[iHeight + 1][iWidth - 1].clicked &&
       !!clearedGrid[iHeight + 1][iWidth - 1] &&
       clearedGrid[iHeight + 1][iWidth - 1].bombsAround === 0
     ) {
